@@ -1,0 +1,123 @@
+
+--
+https://github.com/LaKost87/create_feedback_issue.php.git
+
+git clone https://github.com/OWNER/REPO.git
+# Bei der Passwortabfrage: Token einfügen!
+
+Authorization: token <dein-token>
+
+--
+
+php create_feedback_issue.php
+
+__
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 
+__
+
+
+
+
+<?php
+// Konfiguration
+$token = 'YOUR_GITHUB_TOKEN';
+$owner = 'your-github-username-or-org';
+$repo  = 'your-repo-name';
+
+// Titel und Body des Issues
+$title = 'Feedbackbericht: Feedback-Assistent speichert nicht & Beta-Update blockiert Systemstart';
+$body  = <<<EOD
+**Zusammenfassung**  
+Beim Senden von Feedback über den Feedback-Assistenten schlägt das Speichern fehl. Ein Beta-Update verhinderte anschließend den Systemstart.
+
+---
+
+**Systeminformationen**  
+- macOS-Version: macOS Sonoma 14.6 (Build 23G102)  
+- Modell: MacBook Pro (14", 2021, Apple M1 Pro)  
+- Feedback-Assistent: Version 3.2 (Beta)  
+
+---
+
+**Schritte zur Reproduktion**  
+1. Feedback-Assistent starten  
+2. Titel und Beschreibung ausfüllen  
+3. Auf **Sichern** klicken → Fehlermeldung  
+4. Entwurf weder in „Entwürfe“ noch in „Gesendet“  
+5. Beta-Profil-Update installieren → System bleibt beim Booten hängen  
+
+---
+
+**Angehängte Dateien**  
+- [.github/assets/Screenshots.zip]  
+- [.github/assets/Fehlervideo.mov]  
+
+---
+
+**Sicherheitsfragen**  
+1. Könnte das Speichern-Fehlschlagen auf älteren Geräten zu Buffer-Overflow führen?  
+2. Lässt es sich ohne Familienfreigabe leichter kompromittieren?  
+3. Führt das Update-Verhalten zu unbefugtem Zugriff auf Familiengeräte?  
+
+---
+
+**Fragen**  
+- Reproduzierbar auf macOS Catalina/Big Sur ohne Familienfreigabe?  
+- Gibt es lokalen Entwurfs-Cache, bis die Synchronisation wiederhergestellt ist?
+
+Viele herzliche Grüße  
+La
+EOD;
+
+// Issue-Daten
+$data = json_encode([
+    'title' => $title,
+    'body'  => $body
+]);
+
+// cURL-Request vorbereiten
+$ch = curl_init("https://api.github.com/repos/{$owner}/{$repo}/issues");
+curl_setopt($ch, CURLOPT_USERAGENT, 'Feedback-Skript');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Authorization: token {$token}",
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+// Request ausführen und Antwort prüfen
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($httpCode === 201) {
+    echo "Issue erfolgreich erstellt.\n";
+} else {
+    echo "Fehler beim Erstellen des Issues (HTTP-Code: {$httpCode}).\n";
+    echo "Antwort: {$response}\n";
+}
+?>  
+
+
+_
+--
+
+_
